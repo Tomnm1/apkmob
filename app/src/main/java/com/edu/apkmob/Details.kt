@@ -14,9 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 class Details() : ComponentActivity() {
-    val asd = intent.extras?.get("trail") as Trail
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val asd = intent.getSerializableExtra("trail") as Trail
         setContent {
             DetailsLayout(asd)
         }

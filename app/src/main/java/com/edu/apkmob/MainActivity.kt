@@ -33,13 +33,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    data class Trail(
-        val name: String,
-        val locations: List<String>,
-        val description: String,
-        val durations: List<Int>
-    )
-
     @Composable
     fun MainActivityLayout(context: Context) {
         val trails = listOf(
@@ -60,14 +53,14 @@ class MainActivity : ComponentActivity() {
         TrailList(trails)
     }
     @Composable
-    fun DisplayTrail(trail: Trail){
+    fun DisplayTrail(x: Trail){
         Surface(onClick = {
             val intent = Intent(this, Details::class.java)
-            intent.putExtra("trail", trail)
+            intent.putExtra("trail", x)
             startActivity(intent)
         }) {
             Text(
-                text = trail.name,
+                text = x.name,
                 modifier = Modifier
                     .padding(16.dp),
                 textAlign = TextAlign.Center,
