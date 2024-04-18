@@ -3,6 +3,7 @@ package com.edu.apkmob
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.edu.apkmob.ui.theme.ApkmobTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddCircle
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +57,25 @@ class MainActivity : ComponentActivity() {
             )
         )
 
-        TrailList(trails)
+        Column(modifier = Modifier
+            .fillMaxSize()) {
+            TrailList(trails)
+            Spacer(modifier = Modifier.weight(1f))
+            FloatingActionButton(
+                onClick = {
+                    // Tutaj należy dodać kod do uruchamiania aparatu
+                    Toast.makeText(context, "Tutaj powinien odpalić się aparat", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AddCircle,
+                    contentDescription = "Odpal aparat"
+                )
+            }
+        }
     }
     @Composable
     fun DisplayTrail(x: Trail){

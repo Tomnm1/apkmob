@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,11 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -149,6 +152,21 @@ fun DetailsLayout(trail: Trail,
             }
         }
 
+        Spacer(modifier = Modifier.weight(1f))
+        FloatingActionButton(
+            onClick = {
+                // Tutaj należy dodać kod do uruchamiania aparatu
+                Toast.makeText(context, "Tutaj powinien odpalić się aparat", Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.AddCircle,
+                contentDescription = "Odpal aparat"
+            )
+        }
 
     }
 }
