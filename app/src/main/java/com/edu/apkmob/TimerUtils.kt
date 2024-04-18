@@ -13,6 +13,8 @@ class TimerViewModel : ViewModel() {
     val timer = _timer.asStateFlow()
 
     private var timerJob: Job? = null
+    private val _savedTimes = MutableStateFlow<List<Long>>(emptyList())
+    val savedTimes = _savedTimes.asStateFlow()
 
     fun startTimer() {
         timerJob?.cancel()
@@ -31,6 +33,13 @@ class TimerViewModel : ViewModel() {
     fun stopTimer() {
         _timer.value = 0
         timerJob?.cancel()
+    }
+
+    fun saveTimer() {
+        val currentTimerValue = _timer.value
+        val currentSavedTimes = _savedTimes.value.toMutableList()
+        currentSavedTimes.add(currentTimerValue)
+        _savedTimes.value = currentSavedTimes.toList()
     }
 
     override fun onCleared() {

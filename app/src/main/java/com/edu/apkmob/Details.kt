@@ -1,6 +1,7 @@
 package com.edu.apkmob
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -15,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
@@ -24,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -49,13 +52,16 @@ class Details() : ComponentActivity() {
 @Composable
 fun TimerScreenContent(trail: Trail, timerViewModel: TimerViewModel) {
     val timerValue by timerViewModel.timer.collectAsState()
+    val savedTimesState by timerViewModel.savedTimes.collectAsState()
 
     DetailsLayout(
         trail= trail,
         timerValue = timerValue,
+        savedTimes = savedTimesState,
         onStartClick = { timerViewModel.startTimer() },
         onPauseClick = { timerViewModel.pauseTimer() },
-        onStopClick = { timerViewModel.stopTimer() }
+        onStopClick = { timerViewModel.stopTimer() },
+        onSaveClick = { timerViewModel.saveTimer() }
     )
 }
 
@@ -68,9 +74,11 @@ fun Long.formatTime(): String {
 @Composable
 fun DetailsLayout(trail: Trail,
                   timerValue: Long,
+                  savedTimes: List<Long>,
                   onStartClick: () -> Unit,
                   onPauseClick: () -> Unit,
-                  onStopClick: () -> Unit) {
+                  onStopClick: () -> Unit,
+                  onSaveClick: () -> Unit) {
     val context = LocalContext.current
     Column(
         modifier = Modifier
@@ -99,28 +107,46 @@ fun DetailsLayout(trail: Trail,
 
         Row (horizontalArrangement = Arrangement.Center, modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)){
-            IconButton(onClick = onStopClick ) {
-                Icon(Icons.Outlined.Refresh,
+            .padding(16.dp)) {
+            IconButton(onClick = onStopClick) {
+                Icon(
+                    Icons.Outlined.Refresh,
                     contentDescription = "Refresh",
-                    modifier = Modifier.size(48.dp))
+                    modifier = Modifier.size(48.dp)
+                )
             }
-            IconButton(onClick = onStartClick ) {
+            IconButton(onClick = onStartClick) {
                 Icon(
                     Icons.Outlined.PlayArrow,
                     contentDescription = "Start",
-                    modifier = Modifier.size(48.dp))
+                    modifier = Modifier.size(48.dp)
+                )
             }
-            IconButton(onClick =  onPauseClick ) {
+            IconButton(onClick = onPauseClick) {
                 Icon(
                     Icons.Outlined.Close,
                     contentDescription = "Stop",
-                    modifier = Modifier.size(48.dp))
+                    modifier = Modifier.size(48.dp)
+                )
             }
         }
-        Button(onClick = {
-        }) {
-            Text("Zapisane czasy")
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)) {
+            Button(onClick = {
+                // Wyświetl zapisane czasy
+                val formattedTimes = savedTimes.map { it.formatTime() }.joinToString(", ")
+                Toast.makeText(context, "Zapisane czasy: $formattedTimes", Toast.LENGTH_SHORT).show()
+            }) {
+                Text("Zapisane czasy")
+            }
+            IconButton(onClick = onSaveClick) {
+                Icon(
+                    Icons.Outlined.FavoriteBorder,
+                    contentDescription = "Save",
+                    modifier = Modifier.size(48.dp)
+                )
+            }
         }
 
 
