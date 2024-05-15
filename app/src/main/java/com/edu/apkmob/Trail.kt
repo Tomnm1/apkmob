@@ -3,8 +3,9 @@ package com.edu.apkmob
 import java.io.Serializable
 
 data class Trail(
-    val name: String,
-    val stages: List<String>,
-    val description: String,
-    val estimatedTimes: List<Int>
+    var id: Int,
+    var name: String,
+    var distance: String,
+    var level: String,
+    var desc: String
 ): Serializable

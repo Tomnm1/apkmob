@@ -27,10 +27,12 @@ class TrailTimes: ComponentActivity(){
             TrailTimesLayout()
         }
     }
+
     data class Time(
         val date: Date,
         val time: java.sql.Time,
     )
+
     val timeObject =
         Time(Date(System.currentTimeMillis()), Time(System.currentTimeMillis()))
 

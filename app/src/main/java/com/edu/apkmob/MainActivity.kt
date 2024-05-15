@@ -107,3 +107,97 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/* funckje odpowiedzialne za obsługę galerii/aparatu itp zapożyczone :)))) TODO USUŃ TEN KOMENTARZ XD
+private fun takePhoto(){
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val imageDirectory = "$filesDir/Images/$id/photos"
+        val fileName = "$imageDirectory/$timeStamp.jpg"
+        //val fileName = "$imageDirectory/a.jpg"
+        Log.d("myApp", "$fileName");
+        file = File(fileName)
+        val tempImageUri: Uri = initTempUri()
+        resultLauncher.launch(tempImageUri)
+        Log.d("myApp", "pstryk");
+    }
+
+    private fun addPhotoFromGallery(){
+        val imageDirectory = File("$filesDir/Images/$id/photos")
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val fileName = "$imageDirectory/$timeStamp.jpg"
+        //val fileName = "$imageDirectory/a.jpg"
+        //Log.d("myApp", "$fileName");
+        file = File(fileName)
+        //mGetContent.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        openGallery()
+    }
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        startActivityForResult(intent, REQUEST_IMAGE_PICK)
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK && data != null) {
+            val selectedImageUri = data.data
+            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedImageUri)
+            //img.setImageBitmap(bitmap)
+
+            saveImage(bitmap)
+        }
+    }
+    private fun saveImage(bitmap: Bitmap) {
+        try {
+            FileOutputStream(file).use { outStream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream)
+                refreshGallery()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+    }
+    private fun refreshGallery() {
+        imageGallery.removeAllViews()
+        /*
+        val imgPlus: ImageView = ImageView(this)
+        imgPlus.setImageResource(R.mipmap.plus)
+        imgPlus.setOnClickListener {
+            addImage(it)
+        }
+        imageGallery.addView(imgPlus)
+        imgPlus.minimumWidth = 128
+        imgPlus.minimumHeight = 128
+        */
+        //val fileName = "${imageDirectory}mini.jpg"
+        Log.d("myApp", "here");
+        File("$filesDir/Images/$id/photos").walk().forEach {
+            val indx = "$it".indexOf("mini.jpg", 0)
+            val indxjpg = "$it".indexOf(".jpg", 0)
+            if(indx < 0 && indxjpg > 0){
+                val imgP: ImageView = ImageView(this)
+                val uri: Uri? = Uri.parse("$it")
+                imgP.setImageURI(uri)
+                Log.d("myApp", "${imageGallery.width} - ${imageGallery.height}");
+                imageGallery.addView(imgP)
+                val param = imgP.layoutParams as ViewGroup.MarginLayoutParams
+                //param.setMargins(0,10,0,10)
+                //imgP.layoutParams = param
+                //imgP.layoutParams= LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT,1f)
+                //imgP.maxWidth = 128
+                //imgP.maxHeight = 128
+                //imgP.layoutParams.weig
+                //Log.d("myApp", "${imageGallery.chi}")
+                val f = it
+                imgP.setOnLongClickListener {
+                    delImage(f)
+                    true
+                }
+                Log.d("myApp", "${imageGallery.measuredWidth} - ${imageGallery.measuredHeight}");
+            }
+            Log.d("myApp", "$it - $indx - $indxjpg");
+            //val uri: Uri? = Uri.parse(fileName)
+            //img.setImageURI(uri)
+        }
+    }
+ */
+
