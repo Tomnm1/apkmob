@@ -1,32 +1,45 @@
 package com.edu.apkmob
 
+
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.edu.apkmob.ui.theme.ApkmobTheme
-import androidx.compose.ui.Alignment
-import androidx.compose.material3.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AddCircle
+import com.example.myapp.MyDBHandler
 
 
 class MainActivity : ComponentActivity() {
+    private lateinit var dbHandler: MyDBHandler
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        dbHandler = MyDBHandler(this, null, null, 1)
         setContent {
             ApkmobTheme {
                 // A surface container using the 'background' color from the theme
@@ -34,78 +47,88 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainActivityLayout(context = this)
+                    MainActivityLayout(context = this, dbHandler = dbHandler)
                 }
             }
         }
     }
 
     @Composable
-    fun MainActivityLayout(context: Context) {
-        val trails = listOf(
-            Trail(
-                "Szlak Górski",
-                listOf("Przełęcz", "Szczyt", "Schronisko"),
-                "Opis szlaku górskiego...",
-                listOf(60, 90, 45)
-            ),
-            Trail(
-                "Szlak Nadmorski",
-                listOf("Plaża", "Klif", "Latarnia"),
-                "Opis szlaku nadmorskiego...",
-                listOf(30, 45, 20)
-            )
-        )
+    fun MainActivityLayout(context: Context, dbHandler: MyDBHandler) {
+        var trails by remember { mutableStateOf(listOf<Trail>()) }
 
-        Column(modifier = Modifier
-            .fillMaxSize()) {
-            TrailList(trails)
-            Spacer(modifier = Modifier.weight(1f))
-            FloatingActionButton(
-                onClick = {
-                    // Tutaj należy dodać kod do uruchamiania aparatu
-                    Toast.makeText(context, "Tutaj powinien odpalić się aparat", Toast.LENGTH_SHORT).show()
+        LaunchedEffect(Unit) {
+            trails = loadTrailsFromDB(dbHandler)
+            Log.d("MainActivity", "Loaded ${trails.size} trails")
+        }
+        Box(modifier = Modifier.fillMaxSize()){
+            if (trails.isEmpty()) {
+                Text(
+                    text = "No trails available.",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                    items(trails) { trail ->
+                        TrailCard(trail = trail, context = context)
+                    }
+                }
+            }
+
+        }
+    }
+
+    @Composable
+    fun TrailCard(trail: Trail, context: Context) {
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .clickable {
+                    val intent = Intent(context, Details::class.java).apply {
+                        putExtra("trail_id", trail.id)
+                    }
+                    context.startActivity(intent)
                 },
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(16.dp)
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 6.dp
+            ),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.AddCircle,
-                    contentDescription = "Odpal aparat"
+                Text(
+                    text = trail.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 20.sp
                 )
             }
         }
     }
-    @Composable
-    fun DisplayTrail(x: Trail){
-        Surface(onClick = {
-            val intent = Intent(this, Details::class.java)
-            intent.putExtra("trail", x)
-            startActivity(intent)
-        }) {
-            Text(
-                text = x.name,
-                modifier = Modifier
-                    .padding(16.dp),
-                textAlign = TextAlign.Center,
-            )
-        }
 
-    }
-
-    @Composable
-    fun TrailList(trails: List<Trail>){
-        LazyColumn {
-            items(trails.size){
-                trails.forEach{trail ->
-                    DisplayTrail(trail)
-                }
-            }
-
-        }
+    private suspend fun loadTrailsFromDB(dbHandler: MyDBHandler): List<Trail> {
+        return dbHandler.loadTrailsFromDB()
     }
 }
+
+//FloatingActionButton(
+//onClick = {
+//    // Tutaj należy dodać kod do uruchamiania aparatu
+//    Toast.makeText(context, "Tutaj powinien odpalić się aparat", Toast.LENGTH_SHORT).show()
+//},
+//modifier = Modifier
+//.align(Alignment.BottomEnd)
+//.padding(16.dp)
+//) {
+//    Icon(
+//        imageVector = Icons.Outlined.AddCircle,
+//        contentDescription = "Odpal aparat"
+//    )
+//}
 
 /* funckje odpowiedzialne za obsługę galerii/aparatu itp zapożyczone :)))) TODO USUŃ TEN KOMENTARZ XD
 private fun takePhoto(){

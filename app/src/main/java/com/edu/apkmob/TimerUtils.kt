@@ -16,23 +16,36 @@ class TimerViewModel : ViewModel() {
     private val _savedTimes = MutableStateFlow<List<Long>>(emptyList())
     val savedTimes = _savedTimes.asStateFlow()
 
+    private var isRunning = false
+    private var pauseOffset = 0L
+
     fun startTimer() {
-        timerJob?.cancel()
-        timerJob = viewModelScope.launch {
-            while (true) {
-                delay(1000)
-                _timer.value++
+        if (!isRunning) {
+            timerJob?.cancel()
+            timerJob = viewModelScope.launch {
+                val startTime = System.currentTimeMillis() - pauseOffset
+                while (true) {
+                    _timer.value = (System.currentTimeMillis() - startTime) / 1000
+                    delay(1000)
+                }
             }
+            isRunning = true
         }
     }
 
     fun pauseTimer() {
-        timerJob?.cancel()
+        if (isRunning) {
+            timerJob?.cancel()
+            pauseOffset = _timer.value * 1000
+            isRunning = false
+        }
     }
 
     fun stopTimer() {
         _timer.value = 0
+        pauseOffset = 0
         timerJob?.cancel()
+        isRunning = false
     }
 
     fun saveTimer() {
