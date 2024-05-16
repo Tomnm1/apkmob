@@ -3,35 +3,43 @@ package com.edu.apkmob
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddCircle
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.edu.apkmob.ui.theme.ApkmobTheme
 import com.example.myapp.MyDBHandler
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
@@ -41,94 +49,102 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         dbHandler = MyDBHandler(this, null, null, 1)
         setContent {
-            ApkmobTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainActivityLayout(context = this, dbHandler = dbHandler)
-                }
-            }
+            val timerViewModel: TimerViewModel by viewModels()
+            MainScreen(dbHandler)
         }
-    }
-
-    @Composable
-    fun MainActivityLayout(context: Context, dbHandler: MyDBHandler) {
-        var trails by remember { mutableStateOf(listOf<Trail>()) }
-
-        LaunchedEffect(Unit) {
-            trails = loadTrailsFromDB(dbHandler)
-            Log.d("MainActivity", "Loaded ${trails.size} trails")
-        }
-        Box(modifier = Modifier.fillMaxSize()){
-            if (trails.isEmpty()) {
-                Text(
-                    text = "No trails available.",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center
-                )
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                    items(trails) { trail ->
-                        TrailCard(trail = trail, context = context)
-                    }
-                }
-            }
-
-        }
-    }
-
-    @Composable
-    fun TrailCard(trail: Trail, context: Context) {
-        ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-                .clickable {
-                    val intent = Intent(context, Details::class.java).apply {
-                        putExtra("trail_id", trail.id)
-                    }
-                    context.startActivity(intent)
-                },
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 6.dp
-            ),
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = trail.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontSize = 20.sp
-                )
-            }
-        }
-    }
-
-    private suspend fun loadTrailsFromDB(dbHandler: MyDBHandler): List<Trail> {
-        return dbHandler.loadTrailsFromDB()
     }
 }
 
-//FloatingActionButton(
-//onClick = {
-//    // Tutaj należy dodać kod do uruchamiania aparatu
-//    Toast.makeText(context, "Tutaj powinien odpalić się aparat", Toast.LENGTH_SHORT).show()
-//},
-//modifier = Modifier
-//.align(Alignment.BottomEnd)
-//.padding(16.dp)
-//) {
-//    Icon(
-//        imageVector = Icons.Outlined.AddCircle,
-//        contentDescription = "Odpal aparat"
-//    )
-//}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen(dbHandler: MyDBHandler) {
+    var trails by remember { mutableStateOf(emptyList<Trail>()) }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            trails = dbHandler.loadTrailsFromDB()
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Trails") }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    // Tutaj należy dodać kod do uruchamiania aparatu
+                    Toast.makeText(context, "Tutaj powinien odpalić się aparat", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AddCircle,
+                    contentDescription = "Odpal aparat"
+                )
+            }
+        }
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            TrailGrid(trails = trails)
+        }
+    }
+}
+
+@Composable
+fun TrailGrid(trails: List<Trail>) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.padding(8.dp)
+    ) {
+        items(trails) { trail ->
+            TrailItem(trail = trail)
+        }
+    }
+}
+
+@Composable
+fun TrailItem(trail: Trail) {
+    val context = LocalContext.current
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable {
+                val intent = Intent(context, Details::class.java)
+                intent.putExtra("trail_id", trail.id)
+                context.startActivity(intent)
+            }
+    ) {
+        val imageBitmap = loadImageFromAssets(context, "images/${trail.id}.webp")
+        imageBitmap?.let {
+            Image(
+                bitmap = it.asImageBitmap(),
+                contentDescription = trail.name,
+                modifier = Modifier
+                    .requiredSize(180.dp)
+                    .padding(2.dp)
+            )
+        }
+        Text(text = trail.name, modifier = Modifier.padding(8.dp))
+    }
+}
+
+fun loadImageFromAssets(context: Context, filePath: String): android.graphics.Bitmap? {
+    return try {
+        context.assets.open(filePath).use { inputStream ->
+            BitmapFactory.decodeStream(inputStream)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
 
 /* funckje odpowiedzialne za obsługę galerii/aparatu itp zapożyczone :)))) TODO USUŃ TEN KOMENTARZ XD
 private fun takePhoto(){
