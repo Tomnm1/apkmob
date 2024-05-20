@@ -44,12 +44,10 @@ import kotlin.math.min
 
 @Composable
 fun ParallaxImage(bitmap: Bitmap, scrollFraction: Float, modifier: Modifier = Modifier) {
-    val parallaxOffset = remember { derivedStateOf { max(0f, min(scrollFraction * 0.5f, 200f)) } }
 
     Image(
         bitmap = bitmap.asImageBitmap(),
         contentDescription = null,
-        modifier = modifier.offset(y = parallaxOffset.value.dp)
     )
 }
 
@@ -222,85 +220,92 @@ fun DetailsLayout(
         imageBitmap.value = loadImageFromAssets(context, "images/${trail.id}.webp")
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.weight(1f),
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            item {
-                imageBitmap.value?.let { bitmap ->
-                    val scrollFraction = listState.firstVisibleItemScrollOffset / (bitmap.height.toFloat())
-                    ParallaxImage(bitmap = bitmap, scrollFraction = scrollFraction, modifier = Modifier.padding(16.dp))
-                }
-                Text(text = trail.name, modifier = Modifier.padding(16.dp), fontSize = 28.sp)
-                Text(text = "Distance: ${trail.distance} km", modifier = Modifier.padding(16.dp), fontSize = 20.sp)
-                Text(text = "Level: ${trail.level}", modifier = Modifier.padding(16.dp), fontSize = 20.sp)
-                Text(text = trail.desc, modifier = Modifier.padding(16.dp), fontSize = 18.sp)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                item {
+                    imageBitmap.value?.let { bitmap ->
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(0.dp)
+                        )
+                    }
+                    Text(text = trail.name, modifier = Modifier.padding(16.dp), fontSize = 28.sp)
+                    Text(text = "Distance: ${trail.distance} km", modifier = Modifier.padding(16.dp), fontSize = 20.sp)
+                    Text(text = "Level: ${trail.level}", modifier = Modifier.padding(16.dp), fontSize = 20.sp)
+                    Text(text = trail.desc, modifier = Modifier.padding(16.dp), fontSize = 18.sp)
 
-                Text(
-                    text = "Timer:",
-                    style = TextStyle(
-                        fontSize = 24.sp,
-                        shadow = Shadow(
-                            color = Color.Blue, offset = Offset(5.0f, 10.0f),
-                            blurRadius = 3f,
+                    Text(
+                        text = "Timer:",
+                        style = TextStyle(
+                            fontSize = 24.sp,
+                            shadow = Shadow(
+                                color = Color.Blue, offset = Offset(5.0f, 10.0f),
+                                blurRadius = 3f,
+                            )
                         )
                     )
-                )
 
-                Spacer(modifier = Modifier.height(32.dp))
-                Text(text = timerValue.formatTime(), fontSize = 24.sp)
-            }
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Text(text = timerValue.formatTime(), fontSize = 24.sp)
+                }
 
-            item {
-                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)) {
-                    IconButton(onClick = onStopClick) {
-                        Icon(
-                            Icons.Outlined.Refresh,
-                            contentDescription = "Stop",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-                    IconButton(onClick = onStartClick) {
-                        Icon(
-                            Icons.Outlined.PlayArrow,
-                            contentDescription = "Start",
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-                    IconButton(onClick = onPauseClick) {
-                        Icon(
-                            Icons.Outlined.Close,
-                            contentDescription = "Pause",
-                            modifier = Modifier.size(48.dp)
-                        )
+                item {
+                    Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)) {
+                        IconButton(onClick = onStopClick) {
+                            Icon(
+                                Icons.Outlined.Refresh,
+                                contentDescription = "Stop",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                        IconButton(onClick = onStartClick) {
+                            Icon(
+                                Icons.Outlined.PlayArrow,
+                                contentDescription = "Start",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                        IconButton(onClick = onPauseClick) {
+                            Icon(
+                                Icons.Outlined.Close,
+                                contentDescription = "Pause",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
                     }
                 }
-            }
 
-            item {
-                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)) {
-                    Button(onClick = onShowSavedTimesClick) {
-                        Text("Saved times")
-                    }
-                    IconButton(onClick = onSaveClick) {
-                        Icon(
-                            Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Save",
-                            modifier = Modifier.size(48.dp)
-                        )
+                item {
+                    Row(horizontalArrangement = Arrangement.Center, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)) {
+                        Button(onClick = onShowSavedTimesClick) {
+                            Text("Saved times")
+                        }
+                        IconButton(onClick = onSaveClick) {
+                            Icon(
+                                Icons.Outlined.FavoriteBorder,
+                                contentDescription = "Save",
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -310,15 +315,17 @@ fun DetailsLayout(
             onClick = {
                 Toast.makeText(context, "Tutaj powinien odpalić się aparat", Toast.LENGTH_SHORT).show()
             },
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
         ) {
             Icon(
                 imageVector = Icons.Outlined.AddCircle,
                 contentDescription = "Odpal aparat"
             )
-
         }
     }
 }
+
 
 
