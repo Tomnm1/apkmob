@@ -24,11 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.myapp.MyDBHandler
 import kotlinx.coroutines.launch
 import com.edu.apkmob.ui.theme.ApkmobTheme
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private lateinit var dbHandler: MyDBHandler
@@ -40,16 +43,67 @@ class MainActivity : ComponentActivity() {
             val timerViewModel: TimerViewModel by viewModels()
             var isDarkTheme by remember { mutableStateOf(false) }
             var backgroundColor by remember { mutableStateOf(Color.White) }
-            ApkmobTheme(darkTheme = isDarkTheme) {
-                MainScreen(dbHandler, backgroundColor, isDarkTheme, onToggleTheme = { isDarkTheme = !isDarkTheme })
+            var isLoading by remember { mutableStateOf(true) }
+
+            LaunchedEffect(Unit) {
+                delay(2000) // Simulate a loading period
+                isLoading = false
             }
+
+            if (isLoading) {
+                LoadingScreen()
+            } else {
+                ApkmobTheme(darkTheme = isDarkTheme) {
+                    MainScreen(
+                        dbHandler = dbHandler,
+                        backgroundColor = backgroundColor,
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = { isDarkTheme = !isDarkTheme }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    var rotationAngle by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            rotationAngle += 10f
+            if (rotationAngle >= 360f) {
+                rotationAngle = 0f
+            }
+            delay(16L) // roughly 60 frames per second
+        }
+    }
+
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.mipmap.logo),
+                contentDescription = "Rotating Logo",
+                modifier = Modifier
+                    .size(100.dp)
+                    .graphicsLayer(rotationZ = rotationAngle)
+            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(dbHandler: MyDBHandler, backgroundColor: Color, isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
+fun MainScreen(
+    dbHandler: MyDBHandler,
+    backgroundColor: Color,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
+) {
     var trails by remember { mutableStateOf(emptyList<Trail>()) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -66,7 +120,11 @@ fun MainScreen(dbHandler: MyDBHandler, backgroundColor: Color, isDarkTheme: Bool
         drawerState = drawerState,
         drawerContent = {
             if (drawerState.isOpen) {
-                DrawerContent(onToggleTheme = onToggleTheme, backgroundColor = backgroundColor, closeDrawer = { scope.launch { drawerState.close() } })
+                DrawerContent(
+                    onToggleTheme = onToggleTheme,
+                    backgroundColor = backgroundColor,
+                    closeDrawer = { scope.launch { drawerState.close() } }
+                )
             }
         }
     ) {
@@ -83,11 +141,6 @@ fun MainScreen(dbHandler: MyDBHandler, backgroundColor: Color, isDarkTheme: Bool
                                 Icon(imageVector = Icons.Outlined.Menu, contentDescription = "Menu")
                             }
                         },
-//                        actions = {
-//                            Button(onClick = onToggleTheme) {
-//                                Text("Toggle Theme")
-//                            }
-//                        }
                     )
                 },
                 floatingActionButton = {
