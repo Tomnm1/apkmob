@@ -2,6 +2,7 @@ package com.example.myapp
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
@@ -112,6 +113,27 @@ class MyDBHandler(context: Context, name: String?, factory: SQLiteDatabase.Curso
             null
         }
     }
+    fun getTrailsByDifficulty(difficulty: String): List<Trail> {
+        val trails = mutableListOf<Trail>()
+        val db = this.readableDatabase
+        val cursor: Cursor = db.rawQuery("SELECT * FROM Trail WHERE level = ?", arrayOf(difficulty))
+        if (cursor.moveToFirst()) {
+            do {
+                val trail = Trail(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    name = cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                    distance = cursor.getInt(cursor.getColumnIndexOrThrow("distance")),
+                    level = cursor.getString(cursor.getColumnIndexOrThrow("level")),
+                    desc = cursor.getString(cursor.getColumnIndexOrThrow("desc"))
+                )
+                trails.add(trail)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return trails
+    }
+
 
     fun saveTrailTime(trailId: Int, time: Long) {
         val values = ContentValues().apply {
